@@ -26,9 +26,25 @@ export default function FeedPage() {
   const fetchAnnouncements = async () => {
     const { data } = await supabase
       .from('announcements')
-      .select('*, profiles!announcements_created_by_fkey(name, batch_no)')
+      .select('*')
       .order('created_at', { ascending: false });
-    setAnnouncements((data as Announcement[]) || []);
+    
+    // Fetch creator names
+    if (data) {
+      const creatorIds = [...new Set(data.map(a => a.created_by))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, batch_no')
+        .in('id', creatorIds);
+      
+      const enriched = data.map(a => ({
+        ...a,
+        profiles: profiles?.find(p => p.id === a.created_by) || null,
+      }));
+      setAnnouncements(enriched);
+    } else {
+      setAnnouncements([]);
+    }
     setLoading(false);
   };
 
