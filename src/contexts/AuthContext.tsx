@@ -17,15 +17,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    setProfile(data);
+  };
+
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(data);
+        await fetchProfile(session.user.id);
       } else {
         setProfile(null);
       }
@@ -34,12 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(data);
+        await fetchProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -48,45 +47,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (batchNo: string, name: string): Promise<{ error?: string }> => {
-    // Check if user exists in profiles
-    const { data: existingProfile, error: lookupError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('batch_no', batchNo)
-      .eq('name', name)
-      .single();
-
-    if (lookupError || !existingProfile) {
-      return { error: 'Invalid batch number or name. Contact your admin.' };
-    }
-
-    // Sign in with fake email
     const email = `${batchNo}@bhub.local`;
     const password = `bhub_${batchNo}_secure`;
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      return { error: 'Invalid batch number or name. Contact your admin.' };
+    }
 
-    if (signInError) {
-      // First time - create auth account
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-      if (signUpError) return { error: signUpError.message };
+    // Verify name matches
+    const { data: session } = await supabase.auth.getSession();
+    if (session?.session?.user) {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.session.user.id)
+        .single();
       
-      // Update profile to link with auth user
-      if (signUpData.user) {
-        // We need to update the profile id to match the auth user id
-        // But profile already exists. We'll use an edge function or direct approach.
-        // Actually, the profile was pre-created without an auth user id.
-        // Let's handle this differently - delete old profile, re-insert with auth id
-        const { error: deleteError } = await supabase.rpc('get_user_role', { user_id: signUpData.user.id });
-        // The profile needs the auth user's UUID. Since admin pre-inserts profiles,
-        // we need a different approach. Let's use a server function.
-        // For now, let's create a simpler flow:
-        // Admin creates auth users + profiles together via an edge function.
-        
-        // Actually let's simplify: the profile.id should match auth.users.id
-        // So we need the admin to create users through signUp first.
-        // Let's provide an admin edge function for user creation.
+      if (!prof || prof.name.toLowerCase() !== name.toLowerCase()) {
+        await supabase.auth.signOut();
+        return { error: 'Invalid batch number or name.' };
       }
+      setProfile(prof);
     }
 
     return {};
