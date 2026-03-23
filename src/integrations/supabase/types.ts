@@ -14,16 +14,253 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcement_delivery: {
+        Row: {
+          announcement_id: string
+          batch_no: string
+          delivered_at: string
+          id: string
+        }
+        Insert: {
+          announcement_id: string
+          batch_no: string
+          delivered_at?: string
+          id?: string
+        }
+        Update: {
+          announcement_id?: string
+          batch_no?: string
+          delivered_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_delivery_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcement_views: {
+        Row: {
+          announcement_id: string
+          batch_no: string
+          id: string
+          viewed_at: string
+        }
+        Insert: {
+          announcement_id: string
+          batch_no: string
+          id?: string
+          viewed_at?: string
+        }
+        Update: {
+          announcement_id?: string
+          batch_no?: string
+          id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_views_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          file_url: string | null
+          id: string
+          target_group: Database["public"]["Enums"]["target_group"]
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          file_url?: string | null
+          id?: string
+          target_group?: Database["public"]["Enums"]["target_group"]
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          file_url?: string | null
+          id?: string
+          target_group?: Database["public"]["Enums"]["target_group"]
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          receiver_batch_no: string
+          sender_batch_no: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          receiver_batch_no: string
+          sender_batch_no: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          receiver_batch_no?: string
+          sender_batch_no?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read: boolean
+          reference_id: string | null
+          title: string
+          type: string
+          user_batch_no: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          reference_id?: string | null
+          title: string
+          type: string
+          user_batch_no: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          reference_id?: string | null
+          title?: string
+          type?: string
+          user_batch_no?: string
+        }
+        Relationships: []
+      }
+      polls: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          options: Json
+          question: string
+          target_group: Database["public"]["Enums"]["target_group"]
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          options: Json
+          question: string
+          target_group?: Database["public"]["Enums"]["target_group"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          options?: Json
+          question?: string
+          target_group?: Database["public"]["Enums"]["target_group"]
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          batch_no: string
+          created_at: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          batch_no: string
+          created_at?: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id: string
+          name: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          batch_no?: string
+          created_at?: string
+          gender?: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      votes: {
+        Row: {
+          batch_no: string
+          created_at: string
+          id: string
+          poll_id: string
+          selected_option: string
+        }
+        Insert: {
+          batch_no: string
+          created_at?: string
+          id?: string
+          poll_id: string
+          selected_option: string
+        }
+        Update: {
+          batch_no?: string
+          created_at?: string
+          id?: string
+          poll_id?: string
+          selected_option?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_gender: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["gender_type"]
+      }
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      is_admin_or_rep: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "boys_rep" | "girls_rep" | "student"
+      gender_type: "boy" | "girl"
+      target_group: "all" | "boys" | "girls"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +387,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "boys_rep", "girls_rep", "student"],
+      gender_type: ["boy", "girl"],
+      target_group: ["all", "boys", "girls"],
+    },
   },
 } as const
