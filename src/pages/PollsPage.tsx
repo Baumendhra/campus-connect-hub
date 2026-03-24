@@ -31,17 +31,16 @@ export default function PollsPage() {
   const isAdminOrRep = isAdmin || profile?.role === 'boys_rep' || profile?.role === 'girls_rep';
 
   const fetchData = async () => {
-    const queries: Promise<any>[] = [
+    const [{ data: pollsData }, { data: votesData }] = await Promise.all([
       supabase.from('polls').select('*').order('created_at', { ascending: false }),
       supabase.from('votes').select('*'),
-    ];
+    ]);
+    setPolls(pollsData || []);
+    setVotes(votesData || []);
     if (isAdminOrRep) {
-      queries.push(supabase.from('profiles').select('*').eq('is_deleted', false));
+      const { data: usersData } = await supabase.from('profiles').select('*').eq('is_deleted' as any, false);
+      setUsers(usersData || []);
     }
-    const results = await Promise.all(queries);
-    setPolls(results[0].data || []);
-    setVotes(results[1].data || []);
-    if (isAdminOrRep && results[2]) setUsers(results[2].data || []);
     setLoading(false);
   };
 
