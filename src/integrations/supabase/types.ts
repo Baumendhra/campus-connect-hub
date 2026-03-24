@@ -160,7 +160,9 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          deadline: string | null
           id: string
+          is_closed: boolean
           options: Json
           question: string
           target_group: Database["public"]["Enums"]["target_group"]
@@ -168,7 +170,9 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          deadline?: string | null
           id?: string
+          is_closed?: boolean
           options: Json
           question: string
           target_group?: Database["public"]["Enums"]["target_group"]
@@ -176,7 +180,9 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          deadline?: string | null
           id?: string
+          is_closed?: boolean
           options?: Json
           question?: string
           target_group?: Database["public"]["Enums"]["target_group"]
@@ -189,6 +195,7 @@ export type Database = {
           created_at: string
           gender: Database["public"]["Enums"]["gender_type"]
           id: string
+          is_deleted: boolean
           name: string
           role: Database["public"]["Enums"]["app_role"]
         }
@@ -197,6 +204,7 @@ export type Database = {
           created_at?: string
           gender: Database["public"]["Enums"]["gender_type"]
           id: string
+          is_deleted?: boolean
           name: string
           role?: Database["public"]["Enums"]["app_role"]
         }
@@ -205,6 +213,7 @@ export type Database = {
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"]
           id?: string
+          is_deleted?: boolean
           name?: string
           role?: Database["public"]["Enums"]["app_role"]
         }
