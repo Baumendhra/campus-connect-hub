@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -11,6 +13,18 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+useEffect(() => {
+  const hasSession = Object.keys(localStorage).some(key =>
+    key.includes("auth-token")
+  );
+
+  if (hasSession) {
+    navigate("/dashboard");
+  }
+}, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

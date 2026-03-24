@@ -20,6 +20,7 @@ export default function DashboardPage() {
 
     return () => clearTimeout(check);
   }, []);
+  if(!profile) return <div className="text-center py-20">Loading...</div>;
 
   const cards = [
     { to: '/feed', icon: Megaphone, label: 'Announcements', desc: 'View latest updates', color: 'gradient-primary' },
