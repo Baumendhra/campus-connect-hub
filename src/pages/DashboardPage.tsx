@@ -7,20 +7,10 @@ import { useEffect } from 'react';
 export default function DashboardPage() {
   const { profile } = useAuth();
 
-  useEffect(() => {
-    const check = setTimeout(() => {
-      const hasSession = Object.keys(localStorage).some(key =>
-        key.includes("auth-token")
-      );
-
-      if (!hasSession) {
-        window.location.href = "/";
-      }
-    }, 3000);
-
-    return () => clearTimeout(check);
-  }, []);
-  if(!profile) return <div className="text-center py-20">Loading...</div>;
+  if(!profile) {
+    window.location.href = "/";
+    return null;
+  }
 
   const cards = [
     { to: '/feed', icon: Megaphone, label: 'Announcements', desc: 'View latest updates', color: 'gradient-primary' },
