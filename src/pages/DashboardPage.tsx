@@ -12,7 +12,7 @@ export default function DashboardPage() {
   }
 
   if(!profile) {
-    window.location.href = "/";
+    window.location.href = "/login";
     return null;
   }
 
