@@ -2,9 +2,24 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Megaphone, BarChart3, MessageSquare, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
   const { profile } = useAuth();
+
+  useEffect(() => {
+    const check = setTimeout(() => {
+      const hasSession = Object.keys(localStorage).some(key =>
+        key.includes("auth-token")
+      );
+
+      if (!hasSession) {
+        window.location.href = "/";
+      }
+    }, 3000);
+
+    return () => clearTimeout(check);
+  }, []);
 
   const cards = [
     { to: '/feed', icon: Megaphone, label: 'Announcements', desc: 'View latest updates', color: 'gradient-primary' },
