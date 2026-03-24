@@ -62,15 +62,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setProfile(null);
     } finally {
-      if (isMounted) setLoading(false); // ✅ ALWAYS runs
+      if (isMounted) setLoading(false);
     }
   };
 
   init();
+
+  // 🔥 SAFETY FALLBACK (IMPORTANT)
+  const timeout = setTimeout(() => {
+    if (isMounted) setLoading(false);
+  }, 2000);
 
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
     async (_event, session) => {
@@ -84,10 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return () => {
     isMounted = false;
+    clearTimeout(timeout);
     subscription.unsubscribe();
-  }; 
+  };
 }, []);
-
 //   return () => subscription.unsubscribe();
 // }, []);
 
