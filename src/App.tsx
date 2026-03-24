@@ -45,8 +45,8 @@ const App = () => (
             <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-            {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
-            <Route path="/" element={<AuthRoute><LoginPage /></AuthRoute>} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            {/* <Route path="/" element={<AuthRoute><LoginPage /></AuthRoute>} /> */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
