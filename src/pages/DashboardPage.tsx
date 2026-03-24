@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 export default function DashboardPage() {
   const { profile } = useAuth();
 
-  if(!profile) {
+  if(profile) {
     window.location.href = "/";
     return null;
   }
