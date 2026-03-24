@@ -38,8 +38,8 @@ export default function PollsPage() {
     setPolls(pollsData || []);
     setVotes(votesData || []);
     if (isAdminOrRep) {
-      const { data: usersData } = await supabase.from('profiles').select('*').eq('is_deleted' as any, false);
-      setUsers(usersData || []);
+      const { data: usersData } = await supabase.from('profiles').select('*');
+      setUsers((usersData || []).filter(u => !(u as any).is_deleted));
     }
     setLoading(false);
   };
