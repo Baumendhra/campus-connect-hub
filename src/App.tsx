@@ -31,7 +31,7 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth();
   if (loading) {
     return (
-  <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+  <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
     );
   }
   if (profile) return <Navigate to="/dashboard" replace />;
