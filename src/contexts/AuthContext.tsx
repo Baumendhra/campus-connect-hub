@@ -85,11 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return () => {
     isMounted = false;
     subscription.unsubscribe();
-  };
+  }; 
 }, []);
 
-  return () => subscription.unsubscribe();
-}, []);
+//   return () => subscription.unsubscribe();
+// }, []);
 
   const login = async (batchNo: string, name: string): Promise<{ error?: string }> => {
     const email = `${batchNo}@bhub.local`;
