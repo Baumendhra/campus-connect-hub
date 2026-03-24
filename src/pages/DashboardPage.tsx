@@ -5,9 +5,13 @@ import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { profile } = useAuth();
+  const { profile , loading} = useAuth();
 
-  if(profile) {
+  if(loading) {
+    return <div className="text-center py-20">Loading...</div>;
+  }
+
+  if(!profile) {
     window.location.href = "/";
     return null;
   }
