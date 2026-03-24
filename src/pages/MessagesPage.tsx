@@ -42,7 +42,7 @@ export default function MessagesPage() {
     // Admin sees all
 
     const { data } = await query;
-    setContacts(data || []);
+    setContacts((data || []).filter(c => !(c as any).is_deleted));
   };
 
   useEffect(() => {
