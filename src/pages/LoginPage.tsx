@@ -27,16 +27,32 @@ export default function LoginPage() {
 // }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    const result = await login(batchNo.trim(), name.trim());
-    if (result.error) setError(result.error);
-    else{
+  e.preventDefault();
+  setError('');
+  setLoading(true);
+
+  try {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Login timeout")), 5000)
+    );
+
+    const result = await Promise.race([
+      login(batchNo.trim(), name.trim()),
+      timeout
+    ]);
+
+    if ((result as any)?.error) {
+      setError((result as any).error);
+    } else {
       navigate("/dashboard");
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Login failed or taking too long");
+  }
+
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 gradient-hero">
