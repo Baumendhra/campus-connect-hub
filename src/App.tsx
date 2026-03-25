@@ -52,18 +52,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
-            <Route path="/polls" element={<ProtectedRoute><PollsPage /></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            {/* <Route path="/" element={<AuthRoute><LoginPage /></AuthRoute>} /> */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <PushNotificationWrapper>
+            <InstallPrompt />
+            <Routes>
+              <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
+              <Route path="/polls" element={<ProtectedRoute><PollsPage /></ProtectedRoute>} />
+              <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PushNotificationWrapper>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
