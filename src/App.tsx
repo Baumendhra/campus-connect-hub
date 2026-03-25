@@ -12,9 +12,16 @@ import MessagesPage from "./pages/MessagesPage";
 import AdminPage from "./pages/AdminPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AppLayout from "./components/AppLayout";
+import InstallPrompt from "./components/InstallPrompt";
 import NotFound from "./pages/NotFound";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 
 const queryClient = new QueryClient();
+
+function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
+  usePushNotifications();
+  return <>{children}</>;
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth();
@@ -45,18 +52,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
-            <Route path="/polls" element={<ProtectedRoute><PollsPage /></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            {/* <Route path="/" element={<AuthRoute><LoginPage /></AuthRoute>} /> */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <PushNotificationWrapper>
+            <InstallPrompt />
+            <Routes>
+              <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
+              <Route path="/polls" element={<ProtectedRoute><PollsPage /></ProtectedRoute>} />
+              <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PushNotificationWrapper>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
