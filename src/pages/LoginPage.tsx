@@ -16,15 +16,15 @@ export default function LoginPage() {
 
   const navigate = useNavigate();
 
-useEffect(() => {
-  const hasSession = Object.keys(localStorage).some(key =>
-    key.includes("auth-token")
-  );
+  useEffect(() => {
+    const hasSession = Object.keys(localStorage).some(key =>
+      key.includes("auth-token")
+    );
 
-  if (hasSession) {
-    navigate("/dashboard");
-  }
-}, []);
+    if (hasSession) {
+      navigate("/dashboard");
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
