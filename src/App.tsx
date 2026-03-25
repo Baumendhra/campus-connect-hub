@@ -18,6 +18,11 @@ import { usePushNotifications } from "./hooks/usePushNotifications";
 
 const queryClient = new QueryClient();
 
+function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
+  usePushNotifications();
+  return <>{children}</>;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth();
   if (loading){
