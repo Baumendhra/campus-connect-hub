@@ -30,7 +30,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
      <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
      );
   }
-  if (!profile) return <Navigate to="/login" replace />;
+  if (!loading && !profile) return <Navigate to="/login" replace />;
   return <AppLayout>{children}</AppLayout>;
 }
 
@@ -41,7 +41,7 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
     );
   }
-  if (profile) return <Navigate to="/dashboard" replace />;
+  if (!loading && profile) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
