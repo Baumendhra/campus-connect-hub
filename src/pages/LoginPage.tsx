@@ -52,7 +52,7 @@ useEffect(() => {
               <Input
                 value={batchNo}
                 onChange={(e) => setBatchNo(e.target.value)}
-                placeholder="e.g. 2024001"
+                placeholder="e.g. 274006"
                 required
               />
             </div>
