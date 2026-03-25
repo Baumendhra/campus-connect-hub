@@ -12,7 +12,9 @@ import MessagesPage from "./pages/MessagesPage";
 import AdminPage from "./pages/AdminPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AppLayout from "./components/AppLayout";
+import InstallPrompt from "./components/InstallPrompt";
 import NotFound from "./pages/NotFound";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 
 const queryClient = new QueryClient();
 
