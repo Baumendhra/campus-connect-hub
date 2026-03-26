@@ -96,32 +96,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // }, []);
 
   const login = async (batchNo: string, name: string): Promise<{ error?: string }> => {
-    const email = `${batchNo}@bhub.local`;
-    const password = `bhub_${batchNo}_secure`;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('batch_no', batchNo)
+    .single();
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      return { error: 'Invalid batch number or name. Contact your admin.' };
-    }
+  if (error || !data) {
+    return { error: 'Invalid batch number' };
+  }
 
-    // Verify name matches
-    const { data: session } = await supabase.auth.getSession();
-    if (session?.session?.user) {
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.session.user.id)
-        .single();
-      
-      if (!prof || prof.name.toLowerCase() !== name.toLowerCase()) {
-        await supabase.auth.signOut();
-        return { error: 'Invalid batch number or name.' };
-      }
-      setProfile(prof);
-    }
+  if (data.name.toLowerCase() !== name.toLowerCase()) {
+    return { error: 'Invalid name' };
+  }
 
-    return {};
-  };
+  setProfile(data);
+
+  return {};
+};
 
   const logout = async () => {
     await supabase.auth.signOut();
