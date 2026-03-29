@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('batch_no', Number(batchNo))
+    .eq('batch_no', batchNo)
     .single();
 
   if (error || !data) {
