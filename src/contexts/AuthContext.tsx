@@ -4,6 +4,13 @@ import type { Tables } from '@/integrations/supabase/types';
 
 type Profile = Tables<'profiles'>;
 
+// ─── Permission helpers ───────────────────────────────────────────────────────
+export const canCreatePoll = (p: Profile | null | undefined): boolean => {
+  if (!p) return false;
+  return ['admin', 'boys_rep', 'girls_rep'].includes((p as any).role ?? '');
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
@@ -95,23 +102,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   //   return () => subscription.unsubscribe();
   // }, []);
 
+  // useEffect(() => {
+  //   setProfile(null);
+  //   setLoading(false);
+  // }, []);
+
   useEffect(() => {
-    setProfile(null);
-    setLoading(false);
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setProfile(JSON.parse(storedUser));
+      } else {
+        setProfile(null);
+      }
+    } catch (e) {
+      localStorage.removeItem("user"); // Clear if invalid
+      setProfile(null);
+    } finally {
+      // Prevent infinite loading states
+      setLoading(false);
+    }
   }, []);
 
+
   const login = async (batchNo: string, name: string): Promise<{ error?: string }> => {
+    // 🔒 Security: trim + empty-input guard
+    const cleanBatchNo = batchNo.trim();
+    const cleanName = name.trim();
+    if (!cleanBatchNo || !cleanName) {
+      return { error: 'Batch number and name are required' };
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('batch_no', batchNo)
+      .eq('batch_no', cleanBatchNo)
       .single();
 
     if (error || !data) {
       return { error: 'Invalid batch number' };
     }
 
-    if (data.name.toLowerCase() !== name.toLowerCase()) {
+    // Case-insensitive name check (preserved)
+    if (data.name.toLowerCase() !== cleanName.toLowerCase()) {
       return { error: 'Invalid name' };
     }
 
@@ -122,19 +155,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
     });
-    
+
     if (authError) {
       console.warn('Failed to start Supabase Auth session:', authError.message);
       // We'll still proceed since local login was successful, 
       // though admin edge functions may fail.
     }
 
+    // 💾 Persist session to localStorage
+    localStorage.setItem('user', JSON.stringify(data));
     setProfile(data);
 
     return {};
   };
 
   const logout = async () => {
+    localStorage.removeItem('user');
     await supabase.auth.signOut();
     setProfile(null);
   };

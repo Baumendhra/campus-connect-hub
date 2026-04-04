@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, canCreatePoll } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -134,14 +134,14 @@ export default function PollsPage() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <BarChart3 className="w-6 h-6 text-primary" /> Polls
         </h1>
-        {isAdmin && (
+        {canCreatePoll(profile) && (
           <Button onClick={() => setShowCreate(!showCreate)} className="gradient-primary text-primary-foreground">
             <Plus className="w-4 h-4 mr-1" /> Create
           </Button>
         )}
       </div>
 
-      {showCreate && isAdmin && (
+      {showCreate && canCreatePoll(profile) && (
         <Card className="border-0 shadow-card">
           <CardContent className="pt-4">
             <form onSubmit={handleCreate} className="space-y-3">
