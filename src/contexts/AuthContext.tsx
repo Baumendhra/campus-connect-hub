@@ -115,6 +115,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: 'Invalid name' };
     }
 
+    // Silently log into Supabase Auth so Edge Functions (like create-user) have a valid session
+    const email = `${batchNo}@bhub.local`;
+    const password = `bhub_${batchNo}_secure`;
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (authError) {
+      console.warn('Failed to start Supabase Auth session:', authError.message);
+      // We'll still proceed since local login was successful, 
+      // though admin edge functions may fail.
+    }
+
     setProfile(data);
 
     return {};
