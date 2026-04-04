@@ -45,75 +45,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   //     setLoading(false);
   //   });
 
+  //   //   return () => subscription.unsubscribe();
+  //   // }, []);
+
+  //   useEffect(() => {
+  //   let isMounted = true;
+
+  //   const init = async () => {
+  //     try {
+  //       const { data: { session } } = await supabase.auth.getSession();
+
+  //       if (!isMounted) return;
+
+  //       if (session?.user) {
+  //         await fetchProfile(session.user.id);
+  //       } else {
+  //         setProfile(null);
+  //       }
+  //     } catch {
+  //       setProfile(null);
+  //     } finally {
+  //       if (isMounted) setLoading(false);
+  //     }
+  //   };
+
+  //   init();
+
+  //   // 🔥 SAFETY FALLBACK (IMPORTANT)
+  //   const timeout = setTimeout(() => {
+  //     if (isMounted) setLoading(false);
+  //   }, 2000);
+
+  //   const { data: { subscription } } = supabase.auth.onAuthStateChange(
+  //     async (_event, session) => {
+  //       if (session?.user) {
+  //         await fetchProfile(session.user.id);
+  //       } else {
+  //         setProfile(null);
+  //       }
+  //     }
+  //   );
+
+  //   return () => {
+  //     isMounted = false;
+  //     clearTimeout(timeout);
+  //     subscription.unsubscribe();
+  //   };
+  // }, []);
   //   return () => subscription.unsubscribe();
   // }, []);
 
   useEffect(() => {
-  let isMounted = true;
-
-  const init = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!isMounted) return;
-
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    } catch {
-      setProfile(null);
-    } finally {
-      if (isMounted) setLoading(false);
-    }
-  };
-
-  init();
-
-  // 🔥 SAFETY FALLBACK (IMPORTANT)
-  const timeout = setTimeout(() => {
-    if (isMounted) setLoading(false);
-  }, 2000);
-
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (_event, session) => {
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    }
-  );
-
-  return () => {
-    isMounted = false;
-    clearTimeout(timeout);
-    subscription.unsubscribe();
-  };
-}, []);
-//   return () => subscription.unsubscribe();
-// }, []);
+    setProfile(null);
+    setLoading(false);
+  }, []);
 
   const login = async (batchNo: string, name: string): Promise<{ error?: string }> => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('batch_no', batchNo)
-    .single();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('batch_no', Number(batchNo))
+      .single();
 
-  if (error || !data) {
-    return { error: 'Invalid batch number' };
-  }
+    if (error || !data) {
+      return { error: 'Invalid batch number' };
+    }
 
-  if (data.name.toLowerCase() !== name.toLowerCase()) {
-    return { error: 'Invalid name' };
-  }
+    if (data.name.toLowerCase() !== name.toLowerCase()) {
+      return { error: 'Invalid name' };
+    }
 
-  setProfile(data);
+    setProfile(data);
 
-  return {};
-};
+    return {};
+  };
 
   const logout = async () => {
     await supabase.auth.signOut();
