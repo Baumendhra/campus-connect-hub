@@ -43,15 +43,16 @@ serve(async (req) => {
     const { batch_no, name, gender, role } = await req.json();
 
     if (!batch_no || !name || !gender || !role) {
-      return new Response(JSON.stringify({ error: "Missing fields" }), {
+      return new Response(JSON.stringify({ error: "All fields (batch_no, name, gender, role) are required." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
     const email = `${batch_no}@bhub.local`;
     const password = `bhub_${batch_no}_secure`;
+    let userId: string;
 
-    // Create auth user
+    // Step 1: Try to create the auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -59,31 +60,49 @@ serve(async (req) => {
     });
 
     if (authError) {
-      return new Response(JSON.stringify({ error: authError.message }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      // Step 2: If user already exists, find their ID
+      if (authError.message.includes("already") || authError.message.includes("registered") || authError.message.includes("exists")) {
+        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) {
+          return new Response(JSON.stringify({ error: "Could not look up existing user." }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+        const existingUser = listData.users.find((u: any) => u.email === email);
+        if (!existingUser) {
+          return new Response(JSON.stringify({ error: "Auth user reported as existing but could not be found." }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+        userId = existingUser.id;
+      } else {
+        return new Response(JSON.stringify({ error: `Failed to create auth user: ${authError.message}` }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+    } else {
+      userId = authData.user.id;
     }
 
-    // Create profile
+    // Step 3: Upsert the profile row
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
-      .insert({
-        id: authData.user.id,
+      .upsert({
+        id: userId,
         batch_no,
         name,
         gender,
         role,
-      });
+        is_deleted: false,
+      }, { onConflict: "id" });
 
     if (profileError) {
-      // Cleanup auth user if profile creation fails
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      return new Response(JSON.stringify({ error: profileError.message }), {
+      return new Response(JSON.stringify({ error: `Failed to create profile: ${profileError.message}` }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    return new Response(JSON.stringify({ success: true, user_id: authData.user.id }), {
+    return new Response(JSON.stringify({ success: true, user_id: userId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (err: unknown) {
