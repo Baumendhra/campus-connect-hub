@@ -40,7 +40,14 @@ self.addEventListener('fetch', (event) => {
         });
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        return new Response(JSON.stringify({ error: "Network error" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" }
+        });
+      })
   );
 });
 
