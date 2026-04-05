@@ -188,20 +188,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
-  // ✅ ADDED: Change secret code — updates Supabase + refreshes localStorage
+  // ✅ FIXED: Split update + re-fetch to avoid 406 from chained .select().single() on update
   const changeSecretCode = async (currentCode: string, newCode: string): Promise<{ error?: string }> => {
     if (!profile) return { error: 'Not logged in' };
     const storedSecret = (profile as any).secret_code || '-@123';
     if (currentCode !== storedSecret) return { error: 'Current secret code is incorrect' };
     if (!newCode.trim()) return { error: 'New secret code cannot be empty' };
-    const { data: updated, error } = await supabase
+
+    // Step 1: plain update — NO chained .select() (avoids 406)
+    const { error: updateError } = await supabase
       .from('profiles')
       .update({ secret_code: newCode.trim() } as any)
+      .eq('id', profile.id);
+
+    if (updateError) {
+      console.error('changeSecretCode update error:', updateError);
+      return { error: `Failed to update (${updateError.code ?? updateError.message})` };
+    }
+
+    // Step 2: re-fetch separately; fall back to local merge if it also fails
+    const { data: refreshed } = await supabase
+      .from('profiles')
+      .select('*')
       .eq('id', profile.id)
-      .select()
       .single();
-    if (error || !updated) return { error: 'Failed to update secret code' };
-    // Refresh local state + storage
+
+    const updated = refreshed ?? { ...profile, secret_code: newCode.trim() };
     localStorage.setItem('user', JSON.stringify(updated));
     setProfile(updated as Profile);
     return {};
