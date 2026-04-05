@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN secret_code text DEFAULT NULL;
