@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ALTER COLUMN secret_code SET DEFAULT '-@123';
