@@ -1,11 +1,14 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Megaphone, BarChart3, MessageSquare, Users } from 'lucide-react';
+import { Megaphone, BarChart3, MessageSquare, Users, KeyRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import ChangeSecretCodeModal from '@/components/ChangeSecretCodeModal';
 
 export default function DashboardPage() {
   const { profile , loading} = useAuth();
+  // ✅ ADDED: control change-secret modal
+  const [showChangeSecret, setShowChangeSecret] = useState(false);
 
   if(loading) {
     return <div className="text-center py-20">Loading...</div>;
@@ -29,9 +32,22 @@ export default function DashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-1">Welcome, {profile?.name}!</h1>
-      <p className="text-muted-foreground text-sm mb-6 capitalize">
-        Role: {profile?.role?.replace('_', ' ')} · Batch: {profile?.batch_no}
-      </p>
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-muted-foreground text-sm capitalize">
+          Role: {profile?.role?.replace('_', ' ')} · Batch: {profile?.batch_no}
+        </p>
+        {/* ✅ ADDED: Change secret code trigger */}
+        <button
+          onClick={() => setShowChangeSecret(true)}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+        >
+          <KeyRound className="w-3.5 h-3.5" />
+          Change Secret Code
+        </button>
+      </div>
+
+      {/* ✅ ADDED: Modal */}
+      {showChangeSecret && <ChangeSecretCodeModal onClose={() => setShowChangeSecret(false)} />}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {cards.map((card) => (

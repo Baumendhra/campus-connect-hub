@@ -95,17 +95,22 @@ export default function LoginPage() {
                 required
               />
             </div>
-            {/* ✅ ADDED: Secret code input — only shown after privileged profile is found */}
+            {/* ✅ ADDED: Secret code input — shown for ALL profiles after batchNo+name verified */}
             {needsSecret && (
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Secret Code</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  Secret Code
+                </label>
                 <Input
                   type="password"
                   value={enteredSecret}
                   onChange={(e) => setEnteredSecret(e.target.value)}
-                  placeholder="Enter your secret code"
+                  placeholder="Default: -@123"
                   autoFocus
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  First time? Use the default code: <span className="font-mono font-semibold">-@123</span>
+                </p>
               </div>
             )}
             {error && (

@@ -16,6 +16,8 @@ interface AuthContextType {
   loading: boolean;
   login: (batchNo: string, name: string, secretCode?: string) => Promise<{ error?: string; needsSecret?: boolean }>;
   logout: () => Promise<void>;
+  // ✅ ADDED: change secret code post-login
+  changeSecretCode: (currentCode: string, newCode: string) => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -149,17 +151,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: 'Invalid name' };
     }
 
-    // ✅ ADDED: Secret code gate for privileged roles
-    const privilegedRoles = ['admin', 'boys_rep', 'girls_rep'];
-    const isPrivileged = privilegedRoles.includes((data as any).role ?? '');
-    if (isPrivileged) {
-      if (!secretCode) {
-        // Profile found but secret not yet provided → signal UI to show secret field
-        return { needsSecret: true };
-      }
-      if (secretCode !== (data as any).secret_code) {
-        return { error: 'Invalid secret code' };
-      }
+    // ✅ ADDED: Secret code gate for ALL profiles (default is "-@123" if not set)
+    const storedSecret = (data as any).secret_code || '-@123';
+    if (!secretCode) {
+      // Signal UI to show secret input
+      return { needsSecret: true };
+    }
+    if (secretCode !== storedSecret) {
+      return { error: 'Invalid secret code' };
     }
 
     // Silently log into Supabase Auth so Edge Functions (like create-user) have a valid session
@@ -189,8 +188,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
+  // ✅ ADDED: Change secret code — updates Supabase + refreshes localStorage
+  const changeSecretCode = async (currentCode: string, newCode: string): Promise<{ error?: string }> => {
+    if (!profile) return { error: 'Not logged in' };
+    const storedSecret = (profile as any).secret_code || '-@123';
+    if (currentCode !== storedSecret) return { error: 'Current secret code is incorrect' };
+    if (!newCode.trim()) return { error: 'New secret code cannot be empty' };
+    const { data: updated, error } = await supabase
+      .from('profiles')
+      .update({ secret_code: newCode.trim() } as any)
+      .eq('id', profile.id)
+      .select()
+      .single();
+    if (error || !updated) return { error: 'Failed to update secret code' };
+    // Refresh local state + storage
+    localStorage.setItem('user', JSON.stringify(updated));
+    setProfile(updated as Profile);
+    return {};
+  };
+
   return (
-    <AuthContext.Provider value={{ profile, loading, login, logout }}>
+    <AuthContext.Provider value={{ profile, loading, login, logout, changeSecretCode }}>
       {children}
     </AuthContext.Provider>
   );
