@@ -198,6 +198,7 @@ export type Database = {
           is_deleted: boolean
           name: string
           role: Database["public"]["Enums"]["app_role"]
+          secret_code: string | null
         }
         Insert: {
           batch_no: string
@@ -207,6 +208,7 @@ export type Database = {
           is_deleted?: boolean
           name: string
           role?: Database["public"]["Enums"]["app_role"]
+          secret_code?: string | null
         }
         Update: {
           batch_no?: string
@@ -216,6 +218,7 @@ export type Database = {
           is_deleted?: boolean
           name?: string
           role?: Database["public"]["Enums"]["app_role"]
+          secret_code?: string | null
         }
         Relationships: []
       }
