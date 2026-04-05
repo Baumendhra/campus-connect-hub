@@ -14,7 +14,7 @@ export const canCreatePoll = (p: Profile | null | undefined): boolean => {
 interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
-  login: (batchNo: string, name: string) => Promise<{ error?: string }>;
+  login: (batchNo: string, name: string, secretCode?: string) => Promise<{ error?: string; needsSecret?: boolean }>;
   logout: () => Promise<void>;
 }
 
@@ -125,7 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
 
-  const login = async (batchNo: string, name: string): Promise<{ error?: string }> => {
+  // ✅ ADDED: optional secretCode param for admin/rep validation
+  const login = async (batchNo: string, name: string, secretCode?: string): Promise<{ error?: string; needsSecret?: boolean }> => {
     // 🔒 Security: trim + empty-input guard
     const cleanBatchNo = batchNo.trim();
     const cleanName = name.trim();
@@ -146,6 +147,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Case-insensitive name check (preserved)
     if (data.name.toLowerCase() !== cleanName.toLowerCase()) {
       return { error: 'Invalid name' };
+    }
+
+    // ✅ ADDED: Secret code gate for privileged roles
+    const privilegedRoles = ['admin', 'boys_rep', 'girls_rep'];
+    const isPrivileged = privilegedRoles.includes((data as any).role ?? '');
+    if (isPrivileged) {
+      if (!secretCode) {
+        // Profile found but secret not yet provided → signal UI to show secret field
+        return { needsSecret: true };
+      }
+      if (secretCode !== (data as any).secret_code) {
+        return { error: 'Invalid secret code' };
+      }
     }
 
     // Silently log into Supabase Auth so Edge Functions (like create-user) have a valid session

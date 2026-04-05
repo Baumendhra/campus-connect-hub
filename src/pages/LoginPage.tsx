@@ -13,6 +13,9 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // ✅ ADDED: two-phase secret code state
+  const [enteredSecret, setEnteredSecret] = useState('');
+  const [needsSecret, setNeedsSecret] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,10 +39,18 @@ export default function LoginPage() {
       setTimeout(() => reject(new Error("Login timeout")), 5000)
     );
 
+    // ✅ ADDED: pass secretCode on second phase, undefined on first
     const result = await Promise.race([
-      login(batchNo.trim(), name.trim()),
+      login(batchNo.trim(), name.trim(), needsSecret ? enteredSecret : undefined),
       timeout
     ]);
+
+    // ✅ ADDED: handle needsSecret signal from context
+    if ((result as any)?.needsSecret) {
+      setNeedsSecret(true);
+      setLoading(false);
+      return;
+    }
 
     if ((result as any)?.error) {
       setError((result as any).error);
@@ -84,6 +95,19 @@ export default function LoginPage() {
                 required
               />
             </div>
+            {/* ✅ ADDED: Secret code input — only shown after privileged profile is found */}
+            {needsSecret && (
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Secret Code</label>
+                <Input
+                  type="password"
+                  value={enteredSecret}
+                  onChange={(e) => setEnteredSecret(e.target.value)}
+                  placeholder="Enter your secret code"
+                  autoFocus
+                />
+              </div>
+            )}
             {error && (
               <p className="text-destructive text-sm bg-destructive/10 p-3 rounded-lg">{error}</p>
             )}
